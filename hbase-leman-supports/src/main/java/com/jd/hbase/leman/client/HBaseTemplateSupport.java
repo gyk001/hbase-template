@@ -18,6 +18,8 @@ public class HBaseTemplateSupport implements HBaseOperations {
     private static final Logger logger = LoggerFactory.getLogger(HBaseTemplateSupport.class);
     protected transient Connection connection;
     protected Configuration configuration;
+    protected String tablePrefix;
+
 
     public HBaseTemplateSupport() {
 
@@ -186,8 +188,10 @@ public class HBaseTemplateSupport implements HBaseOperations {
     public Table getTable(String tableName) {
         Table table = null;
 		try {
-
-			table = getConnection().getTable(TableName.valueOf(tableName));
+            if(tablePrefix==null){
+                tablePrefix="";
+            }
+			table = getConnection().getTable(TableName.valueOf(tablePrefix+tableName));
 		} catch (IOException e) {
 			throw new HBaseDataAccessException("can not get hTable!", e);
 		}
@@ -220,6 +224,17 @@ public class HBaseTemplateSupport implements HBaseOperations {
         return val;
     }
 
+    public String getTablePrefix() {
+        return tablePrefix;
+    }
+
+    public void setTablePrefix(String tablePrefix) {
+        this.tablePrefix = tablePrefix;
+    }
+
+    public Configuration getConfiguration() {
+        return configuration;
+    }
 
     public void setConfiguration(Configuration configuration) {
         this.configuration = configuration;
