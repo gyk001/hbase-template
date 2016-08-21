@@ -17,18 +17,18 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.HTableInterface;
-import org.apache.hadoop.hbase.client.HTablePool;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.filter.FilterList;
 import org.apache.hadoop.hbase.util.Bytes;
 
 public class HBaseTemplate extends HBaseTemplateSupport {
-    public HBaseTemplate(HTablePool hTablePool) {
-        this.hTablePool = hTablePool;
+    public HBaseTemplate(Connection connection) {
+        this.connection = connection;
     }
 
     public void insertSingleColumn(String tableName, String rowKey, String family, String qualifier, Object value) throws HBaseDataAccessException {
@@ -106,7 +106,7 @@ public class HBaseTemplate extends HBaseTemplateSupport {
 
     public void delete(String tableName, String rowKey) throws HBaseDataAccessException {
         try {
-            HTableInterface e = this.getTable(tableName);
+            Table e = this.getTable(tableName);
             Delete delete = new Delete(Bytes.toBytes(rowKey));
             e.delete(delete);
         } catch (Exception var5) {
@@ -134,7 +134,7 @@ public class HBaseTemplate extends HBaseTemplateSupport {
     }
 
     public <T> T queryForRow(String tableName, String rowKey, Class<T> requiredType) throws Exception {
-        return this.queryForRow(tableName, rowKey, (RowMapper<T>)(new BeanPropertyRowMapper(requiredType)));
+        return this.queryForRow(tableName, rowKey, (RowMapper<T>)(new BeanPropertyRowMapper<T>(requiredType)));
     }
 
     public <T> T queryForRow(String tableName, String rowKey, RowMapper<T> rowMapper) throws Exception {
@@ -218,7 +218,7 @@ public class HBaseTemplate extends HBaseTemplateSupport {
     }
 
     public <T> List<T> scanAllColumn(Object obj, Class<T> requiredType) throws Exception {
-        return this.scanAllColumn(obj, requiredType, new BeanPropertyRowMapper(requiredType));
+        return this.scanAllColumn(obj, requiredType, new BeanPropertyRowMapper<T>(requiredType));
     }
 
     public <T> List<T> scanAllColumnByGetList(Object obj, Class<T> requiredType, List<String> gets) throws Exception {
@@ -233,7 +233,7 @@ public class HBaseTemplate extends HBaseTemplateSupport {
                 e.add(new Get(get.getBytes()));
             }
 
-            return super.executeGets(tableName, new BeanPropertyRowMapper(requiredType), e);
+            return super.executeGets(tableName, new BeanPropertyRowMapper<T>(requiredType), e);
         } catch (HBaseDataAccessException var8) {
             throw var8;
         } catch (HBaseRowMappingException var9) {
@@ -273,7 +273,7 @@ public class HBaseTemplate extends HBaseTemplateSupport {
             e.setStartRow(startRow.getBytes());
             e.setStopRow(stopRow.getBytes());
             e.setFilter(filterList);
-            return this.executeScan(tableName, new BeanPropertyRowMapper(requiredType), e);
+            return this.executeScan(tableName, new BeanPropertyRowMapper<T>(requiredType), e);
         } catch (HBaseDataAccessException var8) {
             throw var8;
         } catch (HBaseRowMappingException var9) {
@@ -299,7 +299,7 @@ public class HBaseTemplate extends HBaseTemplateSupport {
     }
 
     public <T> List<T> queryForListWithAllColumns(Class<T> requiredType, FilterList filterList) throws Exception {
-        return this.queryForListWithAllColumns(requiredType, filterList, new BeanPropertyRowMapper(requiredType));
+        return this.queryForListWithAllColumns(requiredType, filterList, new BeanPropertyRowMapper<T>(requiredType));
     }
 
     public <T> List<T> queryForListWithAllColumns(Class<T> requiredType, FilterList filterList, RowMapper<T> rowMapper) throws Exception {
@@ -318,7 +318,7 @@ public class HBaseTemplate extends HBaseTemplateSupport {
 
     public <T> List<T> queryForListWithColumns(Class<T> requiredType, List<HBaseColumn> columnList, FilterList filterList) throws Exception {
         try {
-            return this.queryForListWithColumns(requiredType, columnList, filterList, new BeanPropertyRowMapper(requiredType));
+            return this.queryForListWithColumns(requiredType, columnList, filterList, new BeanPropertyRowMapper<T>(requiredType));
         } catch (HBaseDataAccessException var5) {
             throw var5;
         } catch (HBaseRowMappingException var6) {
@@ -343,7 +343,7 @@ public class HBaseTemplate extends HBaseTemplateSupport {
     }
 
     public <T> List<T> queryForListWithFamilies(Class<T> requiredType, FilterList filterList, String... families) throws Exception {
-        return this.queryForListWithFamilies(requiredType, filterList, new BeanPropertyRowMapper(requiredType), families);
+        return this.queryForListWithFamilies(requiredType, filterList, new BeanPropertyRowMapper<T>(requiredType), families);
     }
 
     public <T> List<T> queryForListWithFamilies(Class<T> requiredType, FilterList filterList, RowMapper<T> rowMapper, String... families) throws Exception {

@@ -1,41 +1,44 @@
 package com.jd.hbase.leman.client;
 
-import com.jd.hbase.leman.client.row.RowExtractor;
-import com.jd.hbase.leman.client.row.RowMapper;
-import com.jd.hbase.leman.exception.HBaseDataAccessException;
-import com.jd.hbase.leman.exception.HBaseRowMappingException;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.HTableInterface;
-import org.apache.hadoop.hbase.client.HTablePool;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.client.Table;
+
+import com.jd.hbase.leman.client.row.RowExtractor;
+import com.jd.hbase.leman.client.row.RowMapper;
+import com.jd.hbase.leman.exception.HBaseDataAccessException;
+import com.jd.hbase.leman.exception.HBaseRowMappingException;
 
 public class HBaseTemplateSupport implements HBaseOperations {
     private Log logger = LogFactory.getLog(this.getClass());
-    protected HTablePool hTablePool;
+    protected Connection connection;
 
     public HBaseTemplateSupport() {
     }
 
     public void executePut(String tableName, Put put) throws HBaseDataAccessException {
-        HTableInterface hTable = null;
+        Table table = null;
 
         try {
-            hTable = this.getTable(tableName);
-            hTable.put(put);
+        	table = this.getTable(tableName);
+            table.put(put);
         } catch (Exception var12) {
             throw new HBaseDataAccessException("execute put error with rowKey :" + new String(put.getRow()), var12);
         } finally {
-            if(hTable != null) {
+            if(table != null) {
                 try {
-                    hTable.close();
+                    table.close();
                 } catch (Exception var11) {
                     this.logger.error("", var11);
                 }
@@ -46,11 +49,11 @@ public class HBaseTemplateSupport implements HBaseOperations {
     }
 
     public void executePuts(String tableName, List<Put> puts) throws HBaseDataAccessException {
-        HTableInterface hTable = null;
+        Table table = null;
 
         try {
-            hTable = this.getTable(tableName);
-            hTable.put(puts);
+        	table = this.getTable(tableName);
+            table.put(puts);
         } catch (Exception var15) {
             StringBuilder sb = new StringBuilder("{");
             Iterator i$ = puts.iterator();
@@ -63,10 +66,10 @@ public class HBaseTemplateSupport implements HBaseOperations {
             sb.append("}");
             throw new HBaseDataAccessException("execute put error with rowKeys :" + sb.toString(), var15);
         } finally {
-            if(hTable != null) {
+            if(table != null) {
                 try {
-                    hTable.flushCommits();
-                    hTable.close();
+                	// TODO: table.flushCommits();
+                    table.close();
                 } catch (Exception var14) {
                     this.logger.error("", var14);
                 }
@@ -80,12 +83,12 @@ public class HBaseTemplateSupport implements HBaseOperations {
         if(rowMapper == null) {
             return null;
         } else {
-            HTableInterface hTable = this.getTable(tableName);
+        	Table table = this.getTable(tableName);
             Result result = null;
 
             T var7;
             try {
-                result = hTable.get(get);
+                result = table.get(get);
                 T e = (new RowExtractor<T>(rowMapper)).extract(result);
                 var7 = e;
             } catch (HBaseRowMappingException var17) {
@@ -93,9 +96,9 @@ public class HBaseTemplateSupport implements HBaseOperations {
             } catch (Exception var18) {
                 throw new HBaseDataAccessException("execute query error with rowKey :" + new String(get.getRow()), var18);
             } finally {
-                if(hTable != null) {
+                if(table != null) {
                     try {
-                        hTable.close();
+                        table.close();
                     } catch (Exception var16) {
                         this.logger.error("", var16);
                     }
@@ -109,11 +112,11 @@ public class HBaseTemplateSupport implements HBaseOperations {
 
     public <T> List<T> executeGets(String tableName, RowMapper<T> rowMapper, List<Get> gets) throws HBaseRowMappingException, HBaseDataAccessException {
         List resultList = null;
-        HTableInterface hTable = this.getTable(tableName);
+        Table table = this.getTable(tableName);
 
         try {
-            Result[] e = hTable.get(gets);
-            resultList = (new RowExtractor(rowMapper)).extract(e);
+            Result[] e = table.get(gets);
+            resultList = (new RowExtractor<T>(rowMapper)).extract(e);
         } catch (HBaseRowMappingException var18) {
             throw var18;
         } catch (Exception var19) {
@@ -128,9 +131,9 @@ public class HBaseTemplateSupport implements HBaseOperations {
             sb.append("}");
             throw new HBaseDataAccessException("execute query error with rowKeys :" + sb.toString(), var19);
         } finally {
-            if(hTable != null) {
+            if(table != null) {
                 try {
-                    hTable.close();
+                    table.close();
                 } catch (Exception var17) {
                     this.logger.error("", var17);
                 }
@@ -142,22 +145,22 @@ public class HBaseTemplateSupport implements HBaseOperations {
     }
 
     public <T> List<T> executeScan(String tableName, RowMapper<T> rowMapper, Scan scan) throws HBaseRowMappingException, HBaseDataAccessException {
-        HTableInterface hTable = this.getTable(tableName);
+        Table table = this.getTable(tableName);
         ResultScanner scanner = null;
 
         List e;
         try {
-            scanner = hTable.getScanner(scan);
-            e = (new RowExtractor(rowMapper)).extract(scanner);
+            scanner = table.getScanner(scan);
+            e = (new RowExtractor<T>(rowMapper)).extract(scanner);
         } catch (HBaseRowMappingException var16) {
             throw var16;
         } catch (Exception var17) {
             throw new HBaseDataAccessException("execute scan error !", var17);
         } finally {
-            if(hTable != null) {
+            if(table != null) {
                 try {
                     scanner.close();
-                    hTable.close();
+                    table.close();
                 } catch (Exception var15) {
                     this.logger.error("", var15);
                 }
@@ -168,28 +171,32 @@ public class HBaseTemplateSupport implements HBaseOperations {
         return e;
     }
 
-    public HTableInterface getTable(String tableName) {
-        HTableInterface hTable = this.hTablePool.getTable(tableName);
-        if(hTable == null) {
-            throw new HBaseDataAccessException("can not get hTable!");
-        } else {
-            return hTable;
+    public Table getTable(String tableName) {
+        Table table = null;
+		try {
+			table = this.connection.getTable(TableName.valueOf(tableName));
+		} catch (IOException e) {
+			throw new HBaseDataAccessException("can not get hTable!", e);
+		}
+        if(table == null) {
+			throw new HBaseDataAccessException("can not get hTable!");
         }
+        return table;
     }
 
     public long incrementColumnValue(String tableName, String rowKey, String columnFamily, String qualifier, long v) throws HBaseDataAccessException {
-        HTableInterface hTable = null;
+        Table table = null;
         long val = 0L;
 
         try {
-            hTable = this.getTable(tableName);
-            val = hTable.incrementColumnValue(rowKey.getBytes(), columnFamily.getBytes(), qualifier.getBytes(), v);
+            table = this.getTable(tableName);
+            val = table.incrementColumnValue(rowKey.getBytes(), columnFamily.getBytes(), qualifier.getBytes(), v);
         } catch (Exception var18) {
             throw new HBaseDataAccessException("execute increment Column Value error with rowKey :" + rowKey, var18);
         } finally {
-            if(hTable != null) {
+            if(table != null) {
                 try {
-                    hTable.close();
+                    table.close();
                 } catch (Exception var17) {
                     this.logger.error("", var17);
                 }
