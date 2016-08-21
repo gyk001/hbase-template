@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+    <property>
+        <name>hbase.zookeeper.quorum</name>
+        <value>192.168.178.91,192.168.178.92,192.168.178.93</value>
+    </property>
+
+    <!-- 此参数决定了每次从服务器scan获取的数据量，默认会是1，性能很低，因此设置为100以上，每行数据太大的，可以小一些，否则可以更高 -->
+    <property>
+        <name>hbase.client.scanner.caching</name>
+        <value>200</value>
+    </property>
+
+    <!-- 此参数定义访问的hbase集群使用的zookeeper根节点路径 -->
+    <property>
+        <name>zookeeper.znode.parent</name>
+        <value>/hbase_lions</value>
+    </property>
+
+    <!-- 此参数定义客户端写缓存的大小,这里配置了5M -->
+    <property>
+        <name>hbase.client.write.buffer</name>
+        <value>5242880</value>
+    </property>
+
+    <!-- 其他参数根据应用情况配置，请和HBase组讨论具体业务场景-->
+</configuration>

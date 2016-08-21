@@ -13,39 +13,44 @@
         <dependency>
             <groupId>com.jd.club</groupId>
             <artifactId>hbase-leman-annotation</artifactId>
-            <version>${project.version}</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.apache.hbase/hbase-client -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.apache.hbase</groupId>
-            <artifactId>hbase-client</artifactId>
-            <version>1.1.2</version>
+            <artifactId>hbase-shaded-client</artifactId>
+            <version>1.1.5</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>commons-logging</artifactId>
+                    <groupId>commons-logging</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>slf4j-log4j12</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>log4j</artifactId>
+                    <groupId>log4j</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
-
-<!--                  <dependency> -->
-<!--                      <groupId>com.jd.bdp.hbase</groupId> -->
-<!--                      <artifactId>sdk</artifactId> -->
-<!--                  </dependency> -->
-
-        <!--<dependency>-->
-            <!--<groupId>org.apache.hbase</groupId>-->
-            <!--<artifactId>hbase</artifactId>-->
-            <!--<version>0.94.5</version>-->
-            <!--<classifier>security</classifier>-->
-        <!--</dependency>-->
-
-        <!--<dependency>-->
-            <!--<groupId>org.apache.hadoop</groupId>-->
-            <!--<artifactId>hadoop-core</artifactId>-->
-            <!--<version>0.20.2</version>-->
-        <!--</dependency>-->
-
-
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-beans</artifactId>
-            <version>3.2.17.RELEASE</version>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>commons-logging</artifactId>
+                    <groupId>commons-logging</groupId>
+                </exclusion>
+            </exclusions>
             <optional>true</optional>
         </dependency>
     </dependencies>

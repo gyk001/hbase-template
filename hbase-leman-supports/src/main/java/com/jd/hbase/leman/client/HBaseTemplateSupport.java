@@ -1,30 +1,30 @@
 package com.jd.hbase.leman.client;
 
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hbase.TableName;
-import org.apache.hadoop.hbase.client.Connection;
-import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.ResultScanner;
-import org.apache.hadoop.hbase.client.Scan;
-import org.apache.hadoop.hbase.client.Table;
-
 import com.jd.hbase.leman.client.row.RowExtractor;
 import com.jd.hbase.leman.client.row.RowMapper;
 import com.jd.hbase.leman.exception.HBaseDataAccessException;
 import com.jd.hbase.leman.exception.HBaseRowMappingException;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
 
 public class HBaseTemplateSupport implements HBaseOperations {
-    private Log logger = LogFactory.getLog(this.getClass());
-    protected Connection connection;
+    private static final Logger logger = LoggerFactory.getLogger(HBaseTemplateSupport.class);
+    protected transient Connection connection;
+    protected Configuration configuration;
 
     public HBaseTemplateSupport() {
+
+    }
+
+    public HBaseTemplateSupport(Configuration configuration) {
+        this.configuration = configuration;
     }
 
     public void executePut(String tableName, Put put) throws HBaseDataAccessException {
@@ -171,10 +171,23 @@ public class HBaseTemplateSupport implements HBaseOperations {
         return e;
     }
 
+    public Connection getConnection() throws IOException {
+        if(connection!=null){
+            return connection;
+        }
+        synchronized (HBaseTemplateSupport.class){
+            if(connection!=null){
+                return  connection;
+            }
+            return ConnectionFactory.createConnection(this.configuration);
+        }
+    }
+
     public Table getTable(String tableName) {
         Table table = null;
 		try {
-			table = this.connection.getTable(TableName.valueOf(tableName));
+
+			table = getConnection().getTable(TableName.valueOf(tableName));
 		} catch (IOException e) {
 			throw new HBaseDataAccessException("can not get hTable!", e);
 		}
@@ -205,5 +218,10 @@ public class HBaseTemplateSupport implements HBaseOperations {
         }
 
         return val;
+    }
+
+
+    public void setConfiguration(Configuration configuration) {
+        this.configuration = configuration;
     }
 }

@@ -1,5 +1,6 @@
 package com.jd.hbase.leman.client;
 
+import com.jd.hbase.leman.annotation.Column;
 import com.jd.hbase.leman.client.builder.GetBuilder;
 import com.jd.hbase.leman.client.builder.PutBuilder;
 import com.jd.hbase.leman.client.builder.ScanBuilder;
@@ -11,24 +12,23 @@ import com.jd.hbase.leman.client.util.ReflectUtil;
 import com.jd.hbase.leman.exception.DataParseException;
 import com.jd.hbase.leman.exception.HBaseDataAccessException;
 import com.jd.hbase.leman.exception.HBaseRowMappingException;
-import com.jd.hbase.leman.annotation.Column;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.filter.FilterList;
+import org.apache.hadoop.hbase.util.Bytes;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.hadoop.hbase.client.Connection;
-import org.apache.hadoop.hbase.client.Delete;
-import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Scan;
-import org.apache.hadoop.hbase.client.Table;
-import org.apache.hadoop.hbase.filter.FilterList;
-import org.apache.hadoop.hbase.util.Bytes;
-
 public class HBaseTemplate extends HBaseTemplateSupport {
-    public HBaseTemplate(Connection connection) {
-        this.connection = connection;
+
+    public HBaseTemplate() {
+        super();
+    }
+
+    public HBaseTemplate(Configuration configuration) {
+        super(configuration);
     }
 
     public void insertSingleColumn(String tableName, String rowKey, String family, String qualifier, Object value) throws HBaseDataAccessException {
