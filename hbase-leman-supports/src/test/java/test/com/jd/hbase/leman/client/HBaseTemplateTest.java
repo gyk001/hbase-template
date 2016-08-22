@@ -4,26 +4,30 @@ import com.jd.hbase.leman.client.HBaseTemplate;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 
 /**
  * Created by guoyukun on 2016/8/21.
  */
+@ContextConfiguration("/spring-hbase-test.xml")
+@RunWith(SpringJUnit4ClassRunner.class)
 public class HBaseTemplateTest {
 
+
+    @Autowired
+    private HBaseTemplate hBaseTemplate;
 
 
     @Test
     public void insertRow() throws Exception {
-        Configuration conf = HBaseConfiguration.create();
-//        Connection connection = ConnectionFactory.createConnection(conf);
-
-        HBaseTemplate template = new HBaseTemplate(conf);
-
         TestTableModel query = new TestTableModel();
         query.setId("tttt");
 
-        TestTableModel obj = template.queryForRow(query, TestTableModel.class);
+        TestTableModel obj = hBaseTemplate.queryForRow(query, TestTableModel.class);
         System.out.println(obj.getContent());
         System.out.println(obj.getId());
 //

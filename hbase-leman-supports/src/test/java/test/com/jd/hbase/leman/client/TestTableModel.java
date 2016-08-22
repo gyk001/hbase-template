@@ -7,7 +7,7 @@ import com.jd.hbase.leman.annotation.Table;
 /**
  * Created by guoyukun on 2016/8/21.
  */
-@Table("club_question_test:qa_answer")
+@Table("qa_answer")
 public class TestTableModel {
 
     @RowKey

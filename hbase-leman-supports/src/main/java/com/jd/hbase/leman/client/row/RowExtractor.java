@@ -2,17 +2,17 @@ package com.jd.hbase.leman.client.row;
 
 import com.jd.hbase.leman.exception.HBaseDataAccessException;
 import com.jd.hbase.leman.exception.HBaseRowMappingException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class RowExtractor<T> {
     private final RowMapper<T> rowMapper;
-    private Log logger = LogFactory.getLog(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(RowExtractor.class);
 
     public RowExtractor(RowMapper<T> rowMapper) {
         if (rowMapper == null) {
